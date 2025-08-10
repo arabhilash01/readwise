@@ -12,9 +12,9 @@ class Bookshelf extends StatelessWidget {
     return GridView.builder(
       padding: const EdgeInsets.all(8),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2, // 2 columns
-        crossAxisSpacing: 8, // space between columns
-        mainAxisSpacing: 8, // space between rows
+        crossAxisCount: 2,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
       ),
       itemCount: bookResponse.results?.length,
       itemBuilder: (context, index) {
