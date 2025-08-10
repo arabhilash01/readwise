@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:readwise/core/repositories/books/books_repository.dart';
+import 'package:readwise/presentation/common/custom_appbar.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -21,7 +22,7 @@ class HomeScreen extends StatelessWidget {
     // print('-------------');
     // print(booksRepo.getBookById('1'));
     return Scaffold(
-      appBar: AppBar(title: Text('Home Screen'), backgroundColor: Colors.green),
+      appBar: CustomAppBar(titleText: 'Home page'),
       body: Column(
         children: [
           Text('Hello'),

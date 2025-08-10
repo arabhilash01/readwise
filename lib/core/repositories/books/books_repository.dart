@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:readwise/core/services/api_service.dart';
 import 'package:readwise/shared/models/book_model.dart';
 import 'package:readwise/shared/models/book_response_model.dart';
@@ -51,7 +49,7 @@ class BooksRepository {
       return Book.fromJson(response.data);
     } catch (e) {
       print(e.toString());
-      throw Exception('failed to get books');
+      throw Exception('failed to get book');
     }
   }
 }

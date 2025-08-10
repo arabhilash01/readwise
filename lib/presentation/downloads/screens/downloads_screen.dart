@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:readwise/presentation/common/custom_appbar.dart';
 
 class DownloadsScreen extends StatelessWidget {
   const DownloadsScreen({super.key});
@@ -6,7 +7,7 @@ class DownloadsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Downloads Page')),
+      appBar: CustomAppBar(titleText: 'Downloads'),
       body: Column(children: [Text('Your downloaded items')]),
     );
   }

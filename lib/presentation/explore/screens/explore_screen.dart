@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:readwise/presentation/common/custom_appbar.dart';
 
 class ExploreScreen extends StatelessWidget {
   const ExploreScreen({super.key});
@@ -6,7 +7,7 @@ class ExploreScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Explore Page')),
+      appBar: CustomAppBar(titleText: 'Explore'),
       body: Column(children: [Text('Explore New titles')]),
     );
   }
