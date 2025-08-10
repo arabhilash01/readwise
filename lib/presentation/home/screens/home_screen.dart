@@ -8,8 +8,8 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    getAllData();
-    final booksRepo = BooksRepository();
+    // getAllData();
+    // final booksRepo = BooksRepository();
     // print(await booksRepo.getBooks());
     // print('-------------');
     // print(booksRepo.getBookById('1'));
@@ -37,9 +37,9 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  void getAllData() async {
-    final booksRepo = BooksRepository();
-    final data = await booksRepo.getBooksByIds('1,2,3');
-    print(data.results?.length);
-  }
+  // void getAllData() async {
+  //   final booksRepo = BooksRepository();
+  //   final data = await booksRepo.getBooksByIds('1,2,3');
+  //   print(data.results?.length);
+  // }
 }
