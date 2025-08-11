@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:readwise/core/repositories/books/books_repository.dart';
+import 'package:readwise/presentation/common/custom_appbar.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    getAllData();
-    final booksRepo = BooksRepository();
+    // getAllData();
+    // final booksRepo = BooksRepository();
     // print(await booksRepo.getBooks());
     // print('-------------');
     // print(booksRepo.getBookById('1'));
@@ -21,7 +22,7 @@ class HomeScreen extends StatelessWidget {
     // print('-------------');
     // print(booksRepo.getBookById('1'));
     return Scaffold(
-      appBar: AppBar(title: Text('Home Screen'), backgroundColor: Colors.green),
+      appBar: CustomAppBar(titleText: 'Home page'),
       body: Column(
         children: [
           Text('Hello'),
@@ -36,9 +37,9 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  void getAllData() async {
-    final booksRepo = BooksRepository();
-    final data = await booksRepo.getBooksByIds('1,2,3');
-    print(data.results?.length);
-  }
+  // void getAllData() async {
+  //   final booksRepo = BooksRepository();
+  //   final data = await booksRepo.getBooksByIds('1,2,3');
+  //   print(data.results?.length);
+  // }
 }

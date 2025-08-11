@@ -1,11 +1,16 @@
-import 'dart:convert';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:readwise/core/services/api_service.dart';
 import 'package:readwise/shared/models/book_model.dart';
 import 'package:readwise/shared/models/book_response_model.dart';
 
+final booksRepositoryProvider = Provider<BooksRepository>((ref) {
+  final apiService = ApiService();
+  return BooksRepository(apiService);
+});
+
 class BooksRepository {
-  final ApiService _apiService = ApiService();
+  final ApiService _apiService;
+  BooksRepository(this._apiService);
 
   Future<BookResponse> getBooks() async {
     try {
@@ -51,7 +56,7 @@ class BooksRepository {
       return Book.fromJson(response.data);
     } catch (e) {
       print(e.toString());
-      throw Exception('failed to get books');
+      throw Exception('failed to get book');
     }
   }
 }
