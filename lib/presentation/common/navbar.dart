@@ -18,8 +18,8 @@ class BottomNavBar extends ConsumerStatefulWidget {
 
 class _BottomNavBarState extends ConsumerState<BottomNavBar> {
   final navBarItems = [
-    NavBarItem(iconPath: Assets.exploreIcon, name: 'Explore', routeName: RouteConstants.explore),
     NavBarItem(iconPath: Assets.homeIcon, name: 'Home', routeName: RouteConstants.home),
+    NavBarItem(iconPath: Assets.exploreIcon, name: 'Explore', routeName: RouteConstants.explore),
     NavBarItem(iconPath: Assets.downloadsIcon, name: 'Downloads', routeName: RouteConstants.downloads),
     NavBarItem(iconPath: Assets.settingsIcon, name: 'Settings', routeName: RouteConstants.settings),
   ];
