@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:readwise/app/router/routes.dart';
 import 'package:readwise/presentation/common/book.dart';
 import 'package:readwise/shared/models/book_response_model.dart';
 
@@ -19,9 +20,11 @@ class Bookshelf extends StatelessWidget {
       ),
       itemCount: bookResponse.results?.length,
       itemBuilder: (context, index) {
+        final bookData = bookResponse.results?[index];
         return BookCard(
-          imageUrl: bookResponse.results?[index].formats?.coverImage,
-          title: bookResponse.results?[index].title,
+          imageUrl: bookData?.formats?.coverImage,
+          title: bookData?.title,
+          onTap: () => BookInfoPageRoute(bookId: bookData?.id.toString() ?? '').push(context),
         );
       },
     );
