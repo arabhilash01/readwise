@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:readwise/app/router/router.dart';
+import 'package:readwise/presentation/bookinfo/screens/book_info_screen.dart';
 import 'package:readwise/presentation/downloads/screens/downloads_screen.dart';
 import 'package:readwise/presentation/explore/screens/explore_screen.dart';
 import 'package:readwise/presentation/home/screens/home_screen.dart';
@@ -30,7 +31,10 @@ CustomTransitionPage<T> buildPageWithDefaultTransition<T>({
   routes: <TypedRoute<RouteData>>[
     TypedGoRoute<HomePageRoute>(path: '/home'),
     TypedGoRoute<SettingsPageRoute>(path: '/settings'),
-    TypedGoRoute<ExplorePageRoute>(path: '/explore'),
+    TypedGoRoute<ExplorePageRoute>(
+      path: '/explore',
+      routes: [TypedGoRoute<BookInfoPageRoute>(path: ':bookId')],
+    ),
     TypedGoRoute<DownloadsPageRoute>(path: '/downloads'),
   ],
 )
@@ -75,6 +79,21 @@ class ExplorePageRoute extends GoRouteData with _$ExplorePageRoute {
   @override
   CustomTransitionPage<void> buildPage(BuildContext context, GoRouterState state) {
     return buildPageWithDefaultTransition(child: const ExploreScreen(), context: context, state: state);
+  }
+}
+
+class BookInfoPageRoute extends GoRouteData with _$BookInfoPageRoute {
+  BookInfoPageRoute({required this.bookId});
+
+  final String bookId;
+
+  @override
+  CustomTransitionPage<void> buildPage(BuildContext context, GoRouterState state) {
+    return buildPageWithDefaultTransition(
+      child: BookInfoScreen(bookId: bookId),
+      context: context,
+      state: state,
+    );
   }
 }
 
