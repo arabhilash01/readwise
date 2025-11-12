@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:readwise/core/repositories/books/books_repository.dart';
 import 'package:readwise/core/utils/permission_handlers.dart';
 import 'package:readwise/shared/models/book_model.dart';

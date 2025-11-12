@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:readwise/app/router/routes.dart';
+import 'package:readwise/presentation/bookinfo/screens/book_info_screen.dart';
 import 'package:readwise/presentation/common/book.dart';
 import 'package:readwise/shared/models/book_response_model.dart';
 
