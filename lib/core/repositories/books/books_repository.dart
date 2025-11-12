@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:readwise/core/services/api_service.dart';
 import 'package:readwise/shared/models/book_model.dart';
@@ -10,6 +11,7 @@ final booksRepositoryProvider = Provider<BooksRepository>((ref) {
 
 class BooksRepository {
   final ApiService _apiService;
+
   BooksRepository(this._apiService);
 
   Future<BookResponse> getBooks() async {
@@ -57,6 +59,15 @@ class BooksRepository {
     } catch (e) {
       print(e.toString());
       throw Exception('failed to get book');
+    }
+  }
+
+  Future<Response<dynamic>> downloadBook(String url, String savePath, {Function(int, int)? onReceiveProgress}) async {
+    try {
+      return _apiService.download(url, savePath, onReceiveProgress: onReceiveProgress);
+    } catch (e) {
+      print(e.toString());
+      throw Exception('failed to download book');
     }
   }
 }

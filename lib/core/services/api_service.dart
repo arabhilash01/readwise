@@ -11,4 +11,8 @@ class ApiService {
   Future<Response> post(String endpoint, Map<String, dynamic> data) async {
     return await _dio.post('$baseUrl$endpoint', data: data);
   }
+
+  Future<Response> download(String url, String savePath, {Function(int, int)? onReceiveProgress}) async {
+    return await _dio.download(url, savePath, onReceiveProgress: onReceiveProgress);
+  }
 }

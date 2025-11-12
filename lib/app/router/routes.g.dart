@@ -22,6 +22,13 @@ RouteBase get $shellRoute => ShellRouteData.$route(
       path: '/explore',
 
       factory: _$ExplorePageRoute._fromState,
+      routes: [
+        GoRouteData.$route(
+          path: ':bookId',
+
+          factory: _$BookInfoPageRoute._fromState,
+        ),
+      ],
     ),
     GoRouteData.$route(
       path: '/downloads',
@@ -108,6 +115,30 @@ mixin _$ExplorePageRoute on GoRouteData {
   @override
   void replace(BuildContext context) =>
       context.replace(location, extra: _self.$extra);
+}
+
+mixin _$BookInfoPageRoute on GoRouteData {
+  static BookInfoPageRoute _fromState(GoRouterState state) =>
+      BookInfoPageRoute(bookId: state.pathParameters['bookId']!);
+
+  BookInfoPageRoute get _self => this as BookInfoPageRoute;
+
+  @override
+  String get location =>
+      GoRouteData.$location('/explore/${Uri.encodeComponent(_self.bookId)}');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
 }
 
 mixin _$DownloadsPageRoute on GoRouteData {
