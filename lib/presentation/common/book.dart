@@ -16,7 +16,7 @@ class BookCard extends StatelessWidget {
         height: 200,
         child: Column(
           children: [
-            Image.network(imageUrl ?? '', height: 130, width: 200, fit: BoxFit.fill),
+            Image.network(imageUrl ?? '', height: 130, width: 200, fit: BoxFit.fitHeight),
             Text(title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis),
           ],
         ),

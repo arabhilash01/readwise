@@ -4,7 +4,6 @@ import 'package:epub_view/epub_view.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:readwise/presentation/common/custom_appbar.dart';
-import 'package:vocsy_epub_viewer/epub_viewer.dart';
 
 class DownloadsScreen extends StatefulWidget {
   const DownloadsScreen({super.key});
