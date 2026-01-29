@@ -1,19 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:gap/gap.dart';
-import 'package:readwise/app/theme/text_styles.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:readwise/presentation/explore/screens/categories_screen.dart';
+import 'package:readwise/presentation/explore/screens/explore_screen.dart';
+import 'package:readwise/presentation/home/vm/home_vm.dart';
+import 'package:readwise/presentation/home/widgets/book_horizontal_list.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
+    final homeState = ref.watch(homeViewModelProvider);
+
     return Scaffold(
       body: CustomScrollView(
         controller: _scrollController,
@@ -25,11 +30,15 @@ class _HomeScreenState extends State<HomeScreen> {
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [Color(0xFF1B4332), Color(0xFF2D5016), Color(0xFF40641C)],
+                    colors: [
+                      Color(0xFF1B4332),
+                      Color(0xFF2D5016),
+                      Color(0xFF40641C),
+                    ],
                   ),
                 ),
                 child: Stack(
@@ -37,14 +46,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     Positioned(
                       top: 50,
                       right: 20,
-                      child: Icon(Icons.auto_stories, size: 100, color: Colors.white.withOpacity(0.1)),
+                      child: Icon(
+                        Icons.auto_stories,
+                        size: 100,
+                        color: Colors.white.withOpacity(0.1),
+                      ),
                     ),
                     Positioned(
                       bottom: 30,
                       left: 20,
-                      child: Icon(Icons.menu_book, size: 80, color: Colors.white.withOpacity(0.1)),
+                      child: Icon(
+                        Icons.menu_book,
+                        size: 80,
+                        color: Colors.white.withOpacity(0.1),
+                      ),
                     ),
-                    Padding(
+                    const Padding(
                       padding: EdgeInsets.all(20.0),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -52,15 +69,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           SizedBox(height: 20),
                           Text(
-                            'Hello, User',
-                            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500),
+                            'Hello, Reader',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                           SizedBox(height: 20),
                           Text(
                             'What bookish adventure\nare you looking for?',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 32,
+                              fontSize: 28,
                               fontWeight: FontWeight.bold,
                               height: 1.2,
                             ),
@@ -72,255 +93,112 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            leading: Container(),
           ),
           SliverList(
             delegate: SliverChildListDelegate.fixed([
-              Container(
-                color: Colors.grey[100],
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        spacing: 16,
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16),
-                            child: Row(
+              if (homeState.isLoading)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 50),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else
+                Container(
+                  color: Colors.grey[100],
+                  padding: const EdgeInsets.only(bottom: 100),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 24),
+                      // Categories
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Row(
                               children: [
-                                Icon(Icons.grid_view, size: 20),
+                                Icon(Icons.category, size: 20),
                                 SizedBox(width: 8),
-                                Text('Continue reading', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                                Text(
+                                  'Explore Categories',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ],
                             ),
-                          ),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Image.network(
-                                'https://cdn.penguin.co.in/wp-content/uploads/2022/01/9780143454212.jpg',
-                                height: 100,
-                                width: 100,
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('The Great Gatsby', style: TextStyles.ui15SemiBold),
-                                  Text('F. Scott Fitzgerald', style: TextStyles.ui13Medium),
-                                  Gap(20),
-                                  Stack(
-                                    children: [
-                                      DecoratedBox(
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey,
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: SizedBox(height: 6, width: 180),
-                                      ),
-                                      DecoratedBox(
-                                        decoration: BoxDecoration(
-                                          color: Color(0xFF084516),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: SizedBox(height: 6, width: 120),
-                                      ),
-                                    ],
+                            TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const CategoriesScreen(),
                                   ),
-                                  Gap(6),
-                                  Text('70%'),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
+                                );
+                              },
+                              child: const Text('See All'),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildCategoryCard(
+                              'Fiction',
+                              Icons.auto_stories,
+                              Colors.purple,
+                            ),
+                            const SizedBox(width: 12),
+                            _buildCategoryCard(
+                              'History',
+                              Icons.history_edu,
+                              Colors.brown,
+                            ),
+                            const SizedBox(width: 12),
+                            _buildCategoryCard(
+                              'Poetry',
+                              Icons.edit_note,
+                              Colors.pink,
+                            ),
+                            const SizedBox(width: 12),
+                            _buildCategoryCard(
+                              'Sci-Fi',
+                              Icons.rocket_launch,
+                              Colors.blue,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
 
-                    Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.grid_view, size: 20),
-                              SizedBox(width: 8),
-                              Text('Categories', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                            ],
-                          ),
-                          Icon(Icons.arrow_forward),
-                        ],
+                      // Trending
+                      BookHorizontalList(
+                        title: 'Trending Now',
+                        books: homeState.trending,
                       ),
-                    ),
+                      const SizedBox(height: 24),
 
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _buildCategoryCard('Horror', Icons.games, Colors.brown),
-                          SizedBox(width: 12),
-                          _buildCategoryCard('Sports', Icons.sports_basketball, Colors.green),
-                          SizedBox(width: 12),
-                          _buildCategoryCard('Literature', Icons.edit, Colors.orange),
-                          SizedBox(width: 12),
-                          _buildCategoryCard('New', Icons.new_releases, Colors.blue),
-                        ],
+                      // Philosophy
+                      BookHorizontalList(
+                        title: 'Dive into Philosophy',
+                        books: homeState.philosophy,
                       ),
-                    ),
-                    Gap(16),
-                    Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        spacing: 16,
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16),
-                            child: Row(
-                              children: [
-                                Icon(Icons.history, size: 20),
-                                SizedBox(width: 8),
-                                Text('Recently Viewed', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Row(
-                              spacing: 6,
-                              children: [
-                                Expanded(
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Image.network(
-                                        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2KuFBHfsxQZK3XSsXtiRqaXOWcRn2MId1Tw&s',
-                                        height: 100,
-                                        width: 80,
-                                        fit: BoxFit.cover,
-                                      ),
-                                      Gap(6),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text('Harry Potter', style: TextStyles.ui15SemiBold),
-                                            Text('J.K. Rowling', style: TextStyles.ui13Medium),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Image.network(
-                                        'https://m.media-amazon.com/images/I/712cDO7d73L._UF1000,1000_QL80_.jpg',
-                                        height: 100,
-                                        width: 80,
-                                        fit: BoxFit.cover,
-                                      ),
-                                      Gap(6),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text('The Hobbit', style: TextStyles.ui15SemiBold),
-                                            Text('J.R.R. Tolkien', style: TextStyles.ui13Medium),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                      const SizedBox(height: 24),
+
+                      // Adventure
+                      BookHorizontalList(
+                        title: 'Adventure Awaits',
+                        books: homeState.adventure,
                       ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        spacing: 16,
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16),
-                            child: Row(
-                              children: [
-                                Icon(Icons.favorite_border, size: 20),
-                                SizedBox(width: 8),
-                                Text('Favorites', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Row(
-                              spacing: 6,
-                              children: [
-                                Expanded(
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Image.network(
-                                        'https://cdn.penguin.co.in/wp-content/uploads/2023/05/9780143454229.jpg',
-                                        height: 100,
-                                        width: 80,
-                                        fit: BoxFit.cover,
-                                      ),
-                                      Gap(6),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text('Pride and Prejudice', style: TextStyles.ui15SemiBold),
-                                            Text('Jane Austen', style: TextStyles.ui13Medium),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Image.network(
-                                        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe2OB232subhhC0wsLSAljKYAzyAf6FyPqWA&s',
-                                        height: 100,
-                                        width: 80,
-                                        fit: BoxFit.cover,
-                                      ),
-                                      Gap(6),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text('To kill a mocking bird', style: TextStyles.ui15SemiBold),
-                                            Text('Harper Lee', style: TextStyles.ui13Medium),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Gap(100),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
             ]),
           ),
         ],
@@ -330,24 +208,49 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildCategoryCard(String title, IconData icon, Color color) {
     return Expanded(
-      child: Container(
-        height: 80,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: Offset(0, 2))],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(color: color.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
-              child: Icon(icon, color: color, size: 24),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ExploreScreen(initialCategory: title),
             ),
-            SizedBox(height: 4),
-            Text(title, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-          ],
+          );
+        },
+        child: Container(
+          height: 80,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

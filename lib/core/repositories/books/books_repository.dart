@@ -14,37 +14,28 @@ class BooksRepository {
 
   BooksRepository(this._apiService);
 
-  Future<BookResponse> getBooks() async {
+  Future<BookResponse> getBooks({
+    String? search,
+    String? topic,
+    String? languages,
+    String? ids,
+    String? mimeType,
+    bool? copyright,
+    int? page,
+    String? cursor,
+  }) async {
     try {
-      final response = await _apiService.get('books');
-      return BookResponse.fromJson(response.data);
-    } catch (e) {
-      print(e.toString());
-      throw Exception('failed to get books');
-    }
-  }
+      final Map<String, dynamic> queryParams = {};
+      if (search != null) queryParams['search'] = search;
+      if (topic != null) queryParams['topic'] = topic;
+      if (languages != null) queryParams['languages'] = languages;
+      if (ids != null) queryParams['ids'] = ids;
+      if (mimeType != null) queryParams['mime_type'] = mimeType;
+      if (copyright != null) queryParams['copyright'] = copyright.toString();
+      if (page != null) queryParams['page'] = page;
+      if (cursor != null) queryParams['cursor'] = cursor;
 
-  Future<BookResponse> getBooksByLanguage(String language) async {
-    try {
-      final response = await _apiService.get('books', {'languages': language});
-      return BookResponse.fromJson(response.data);
-    } catch (e) {
-      throw Exception('failed to get books');
-    }
-  }
-
-  Future<BookResponse> getBooksByCategory(String category) async {
-    try {
-      final response = await _apiService.get('books', {'topic': category});
-      return BookResponse.fromJson(response.data);
-    } catch (e) {
-      throw Exception('failed to get books');
-    }
-  }
-
-  Future<BookResponse> getBooksByIds(String ids) async {
-    try {
-      final response = await _apiService.get('books', {'ids': ids});
+      final response = await _apiService.get('books', queryParams);
       return BookResponse.fromJson(response.data);
     } catch (e) {
       print(e.toString());
@@ -62,9 +53,17 @@ class BooksRepository {
     }
   }
 
-  Future<Response<dynamic>> downloadBook(String url, String savePath, {Function(int, int)? onReceiveProgress}) async {
+  Future<Response<dynamic>> downloadBook(
+    String url,
+    String savePath, {
+    Function(int, int)? onReceiveProgress,
+  }) async {
     try {
-      return _apiService.download(url, savePath, onReceiveProgress: onReceiveProgress);
+      return _apiService.download(
+        url,
+        savePath,
+        onReceiveProgress: onReceiveProgress,
+      );
     } catch (e) {
       print(e.toString());
       throw Exception('failed to download book');

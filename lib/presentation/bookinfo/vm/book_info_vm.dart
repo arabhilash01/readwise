@@ -1,8 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:readwise/core/repositories/books/books_repository.dart';
-import 'package:readwise/core/utils/permission_handlers.dart';
+import 'package:readwise/presentation/downloads/vm/downloads_vm.dart';
 import 'package:readwise/shared/models/book_model.dart';
 
 final bookInfoViewModelProvider =
@@ -22,11 +20,17 @@ class BookInfoViewModel extends FamilyAsyncNotifier<Book, String> {
   }
 
   Future<void> downloadBook(
-    String url,
+    Book book,
     String savePath, {
     Function(double)? onProgress,
   }) async {
     final repository = ref.read(booksRepositoryProvider);
+    final url = book.formats?.epub;
+
+    if (url == null || url.isEmpty) {
+      throw Exception("No EPUB link available");
+    }
+
     final response = await repository.downloadBook(
       url,
       savePath,
@@ -37,7 +41,14 @@ class BookInfoViewModel extends FamilyAsyncNotifier<Book, String> {
         }
       },
     );
+
     if (response.statusCode == 200) {
+      // Save metadata
+      await DownloadsRepository().saveBookMetadata(book);
+
+      // Auto-refresh downloads list
+      ref.invalidate(downloadsViewModelProvider);
+
       print('download success');
     } else {
       throw Exception("Failed to download EPUB");

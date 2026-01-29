@@ -16,16 +16,19 @@ class Bookshelf extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 24,
+        childAspectRatio: 0.65, // Adjusted for book cover + text
       ),
-      itemCount: bookResponse.results?.length,
+      itemCount: bookResponse.results?.length ?? 0,
       itemBuilder: (context, index) {
-        final bookData = bookResponse.results?[index];
+        final bookData = bookResponse.results![index];
         return BookCard(
-          imageUrl: bookData?.formats?.coverImage,
-          title: bookData?.title,
-          onTap: () => BookInfoPageRoute(bookId: bookData?.id.toString() ?? '').push(context),
+          imageUrl: bookData.formats?.coverImage,
+          title: bookData.title,
+          authors: bookData.authors?.map((a) => a.name).toList(),
+          onTap: () =>
+              BookInfoPageRoute(bookId: bookData.id.toString()).push(context),
         );
       },
     );

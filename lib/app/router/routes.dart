@@ -18,12 +18,19 @@ CustomTransitionPage<T> buildPageWithDefaultTransition<T>({
   return CustomTransitionPage<T>(
     key: state.pageKey,
     child: child,
-    transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
-      position: state.extra != true
-          ? Tween<Offset>(begin: const Offset(1, 0), end: const Offset(0, 0)).animate(animation)
-          : Tween<Offset>(begin: const Offset(-1, 0), end: const Offset(0, 0)).animate(animation),
-      child: child,
-    ),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+        SlideTransition(
+          position: state.extra != true
+              ? Tween<Offset>(
+                  begin: const Offset(1, 0),
+                  end: const Offset(0, 0),
+                ).animate(animation)
+              : Tween<Offset>(
+                  begin: const Offset(-1, 0),
+                  end: const Offset(0, 0),
+                ).animate(animation),
+          child: child,
+        ),
   );
 }
 
@@ -55,8 +62,15 @@ class HomePageRoute extends GoRouteData with _$HomePageRoute {
   final bool? $extra;
 
   @override
-  CustomTransitionPage<void> buildPage(BuildContext context, GoRouterState state) {
-    return buildPageWithDefaultTransition(child: const HomeScreen(), context: context, state: state);
+  CustomTransitionPage<void> buildPage(
+    BuildContext context,
+    GoRouterState state,
+  ) {
+    return buildPageWithDefaultTransition(
+      child: const HomeScreen(),
+      context: context,
+      state: state,
+    );
   }
 }
 
@@ -66,8 +80,15 @@ class SettingsPageRoute extends GoRouteData with _$SettingsPageRoute {
   final bool? $extra;
 
   @override
-  CustomTransitionPage<void> buildPage(BuildContext context, GoRouterState state) {
-    return buildPageWithDefaultTransition(child: const SettingsScreen(), context: context, state: state);
+  CustomTransitionPage<void> buildPage(
+    BuildContext context,
+    GoRouterState state,
+  ) {
+    return buildPageWithDefaultTransition(
+      child: const SettingsScreen(),
+      context: context,
+      state: state,
+    );
   }
 }
 
@@ -77,8 +98,15 @@ class ExplorePageRoute extends GoRouteData with _$ExplorePageRoute {
   final bool? $extra;
 
   @override
-  CustomTransitionPage<void> buildPage(BuildContext context, GoRouterState state) {
-    return buildPageWithDefaultTransition(child: const ExploreScreen(), context: context, state: state);
+  CustomTransitionPage<void> buildPage(
+    BuildContext context,
+    GoRouterState state,
+  ) {
+    return buildPageWithDefaultTransition(
+      child: const ExploreScreen(),
+      context: context,
+      state: state,
+    );
   }
 }
 
@@ -88,7 +116,10 @@ class BookInfoPageRoute extends GoRouteData with _$BookInfoPageRoute {
   final String bookId;
 
   @override
-  CustomTransitionPage<void> buildPage(BuildContext context, GoRouterState state) {
+  CustomTransitionPage<void> buildPage(
+    BuildContext context,
+    GoRouterState state,
+  ) {
     return buildPageWithDefaultTransition(
       child: BookInfoScreen(bookId: bookId),
       context: context,
@@ -103,7 +134,14 @@ class DownloadsPageRoute extends GoRouteData with _$DownloadsPageRoute {
   final bool? $extra;
 
   @override
-  CustomTransitionPage<void> buildPage(BuildContext context, GoRouterState state) {
-    return buildPageWithDefaultTransition(child: const DownloadsScreen(), context: context, state: state);
+  CustomTransitionPage<void> buildPage(
+    BuildContext context,
+    GoRouterState state,
+  ) {
+    return buildPageWithDefaultTransition(
+      child: const DownloadsScreen(),
+      context: context,
+      state: state,
+    );
   }
 }

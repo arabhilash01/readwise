@@ -1,11 +1,15 @@
+import 'dart:io';
+import 'dart:ui';
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:epub_view/epub_view.dart' hide Image;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gap/gap.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:readwise/app/theme/text_styles.dart';
 import 'package:readwise/presentation/bookinfo/vm/book_info_vm.dart';
 import 'package:readwise/shared/models/book_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class BookInfoScreen extends ConsumerStatefulWidget {
   final String bookId;
@@ -20,196 +24,388 @@ class _BookInfoScreenState extends ConsumerState<BookInfoScreen> {
   double _downloadProgress = 0.0;
   bool _isDownloading = false;
   bool _isDownloaded = false;
+  File? _bookFile;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkDownloadStatus();
+  }
+
+  Future<void> _checkDownloadStatus() async {
+    final dir = await getApplicationDocumentsDirectory();
+    final file = File('${dir.path}/book_${widget.bookId}.epub');
+    if (await file.exists()) {
+      if (mounted) {
+        setState(() {
+          _isDownloaded = true;
+          _bookFile = file;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final bookAsyncValue = ref.watch(bookInfoViewModelProvider(widget.bookId));
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: bookAsyncValue.when(
-        data: (data) => SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Stack(
-                alignment: Alignment.bottomCenter,
-                clipBehavior: Clip.none,
-                children: [
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        fit: BoxFit.fitWidth,
-                        image: NetworkImage(data.formats?.coverImage ?? ''),
-                        colorFilter: ColorFilter.mode(
-                          Colors.black.withOpacity(0.5),
-                          BlendMode.darken,
+        data: (book) => Builder(
+          builder: (context) {
+            return CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                _buildSliverAppBar(context, book),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildTitleSection(book),
+                        const SizedBox(height: 16),
+                        _buildInfoSection(book),
+                        const SizedBox(height: 24),
+                        // Static/Inline Download Button positioned high up
+                        _buildDownloadButton(context, book),
+                        const SizedBox(height: 32),
+                        const Divider(height: 1),
+                        const SizedBox(height: 24),
+                        Text(
+                          'About this book',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
                         ),
-                      ),
-                    ),
-                    child: const SizedBox(width: double.infinity, height: 200),
-                  ),
-                  Positioned(
-                    top: 60,
-                    left: 10,
-                    child: InkWell(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: const Icon(
-                        Icons.arrow_back_ios_outlined,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: -80,
-                    left: 20,
-                    child: SizedBox(
-                      width: 180,
-                      height: 180,
-                      child: Image.network(data.formats?.coverImage ?? ''),
+                        const SizedBox(height: 12),
+                        Text(
+                          book.summaries?.join('\n\n') ??
+                              'No summary available.',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Colors.grey[700],
+                                height: 1.6,
+                                fontSize: 16,
+                              ),
+                        ),
+                        const SizedBox(
+                          height: 100,
+                        ), // Space for navbar scrolling
+                      ],
                     ),
                   ),
-                ],
-              ),
-              const Gap(90),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(data.title ?? '', style: TextStyles.ui18SemiBold),
-                    Text(author(data), style: TextStyles.ui13Medium),
-                    const Gap(16),
-                    Text(summary(data), style: TextStyles.ui15Medium),
-                    const Gap(20),
-                    _buildDownloadButton(data),
-                    const Gap(20),
-                  ],
                 ),
-              ),
-              const Gap(100),
-            ],
-          ),
+              ],
+            );
+          },
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => const Center(child: Text('Error')),
+        error: (error, stackTrace) => Center(child: Text('Error: $error')),
       ),
     );
   }
 
-  Widget _buildDownloadButton(Book data) {
-    final vm = ref.read(bookInfoViewModelProvider(widget.bookId).notifier);
-    return GestureDetector(
-      onTap: _isDownloading || _isDownloaded
-          ? null
-          : () async {
-              setState(() {
-                _isDownloading = true;
-                _downloadProgress = 0.0;
-              });
-              await Permission.storage.request();
-              final dir = await getApplicationDocumentsDirectory();
-              final savePath = '${dir.path}/book_${data.id}.epub';
-              try {
-                await vm.downloadBook(
-                  data.formats?.epub ?? '',
-                  savePath,
-                  onProgress: (progress) {
-                    setState(() {
-                      _downloadProgress = progress;
-                    });
-                  },
-                );
-                setState(() {
-                  _isDownloading = false;
-                  _isDownloaded = true;
-                });
-              } catch (e) {
-                setState(() {
-                  _isDownloading = false;
-                  _isDownloaded = false;
-                });
-              }
-            },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        height: 50,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: _isDownloaded
-              ? Colors.green
-              : Theme.of(context).colorScheme.primary,
-        ),
-        child: Stack(
-          alignment: Alignment.center,
+  Widget _buildSliverAppBar(BuildContext context, Book book) {
+    return SliverAppBar(
+      expandedHeight: 400,
+      pinned: true,
+      stretch: true,
+      backgroundColor: const Color(0xFF1B4332), // Fallback
+      flexibleSpace: FlexibleSpaceBar(
+        background: Stack(
+          fit: StackFit.expand,
           children: [
-            if (_isDownloading)
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 100),
-                    width: constraints.maxWidth * _downloadProgress,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  );
-                },
-              ),
+            // Blurred Background
+            if (book.formats?.coverImage != null)
+              CachedNetworkImage(
+                imageUrl: book.formats!.coverImage!,
+                fit: BoxFit.cover,
+                color: Colors.black.withOpacity(0.6),
+                colorBlendMode: BlendMode.darken,
+              )
+            else
+              Container(color: const Color(0xFF1B4332)),
+
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(color: Colors.transparent),
+            ),
+
+            // Central Cover Image
             Center(
-              child: Text(
-                _isDownloading
-                    ? 'Downloading ${(_downloadProgress * 100).toStringAsFixed(0)}%'
-                    : _isDownloaded
-                    ? 'Downloaded ✅'
-                    : 'Download EPUB',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
+              child: Hero(
+                tag: 'book_cover_${book.id}',
+                child: Container(
+                  height: 240,
+                  width: 160,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.4),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: book.formats?.coverImage != null
+                        ? CachedNetworkImage(
+                            imageUrl: book.formats!.coverImage!,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              color: Colors.grey[200],
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ),
+                            errorWidget: (_, __, ___) => const Icon(
+                              Icons.book,
+                              size: 50,
+                              color: Colors.grey,
+                            ),
+                          )
+                        : const SizedBox(),
+                  ),
                 ),
               ),
             ),
           ],
         ),
       ),
+      leading: IconButton(
+        icon: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.black45, // Semi-transparent backing
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.arrow_back, color: Colors.white),
+        ),
+        onPressed: () => Navigator.of(context).pop(),
+      ),
     );
   }
 
-  String summary(Book book) => book.summaries?.join(',').toString() ?? '';
+  Widget _buildTitleSection(Book book) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          book.title ?? 'Untitled',
+          style: const TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Serif', // Use a serif font if available or default
+            letterSpacing: -0.5,
+            color: Colors.black87,
+            height: 1.2,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          book.authors?.map((a) => a.name).join(', ') ?? 'Unknown Author',
+          style: TextStyle(
+            fontSize: 18,
+            color: const Color(0xFF1B4332), // Forest Green accent
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
 
-  String author(Book book) =>
-      book.authors?.map((author) => author.name).join(',').toString() ?? '';
+  Widget _buildInfoSection(Book book) {
+    // Collect some metadata tags
+    final tags = <Widget>[];
+    if (book.languages != null && book.languages!.isNotEmpty) {
+      tags.add(_buildTag(Icons.language, book.languages!.first.toUpperCase()));
+    }
+    if (book.downloadCount != null) {
+      tags.add(_buildTag(Icons.download_rounded, '${book.downloadCount}'));
+    }
 
-  void downloadEpub(Book data) async {
+    // Add copyright check or other metadata if available in model
+    // For now showing available format types as tags
+    if (book.formats?.epub != null) {
+      tags.add(_buildTag(Icons.book_outlined, 'EPUB'));
+    }
+
+    return Wrap(spacing: 12, runSpacing: 12, children: tags);
+  }
+
+  Widget _buildTag(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: Colors.grey[700]),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[800],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDownloadButton(BuildContext context, Book book) {
+    return SizedBox(
+      height: 56,
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () {
+          if (_isDownloaded) {
+            if (_bookFile != null) {
+              _openBook(context, _bookFile!);
+            }
+          } else if (!_isDownloading) {
+            _handleDownload(book);
+          }
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _isDownloaded
+              ? const Color(0xFF1B4332) // Forest Green
+              : Colors.black87,
+          foregroundColor: Colors.white,
+          elevation: 2, // Slightly reduced elevation for inline
+          shadowColor: Colors.black38,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        child: _isDownloading
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      value: _downloadProgress > 0 ? _downloadProgress : null,
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Downloading ${(_downloadProgress * 100).toInt()}%',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(_isDownloaded ? Icons.menu_book : Icons.download),
+                  const SizedBox(width: 12),
+                  Text(
+                    _isDownloaded ? 'Read Now' : 'Download Book',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+
+  Future<void> _handleDownload(Book book) async {
     final vm = ref.read(bookInfoViewModelProvider(widget.bookId).notifier);
+
     setState(() {
       _isDownloading = true;
       _downloadProgress = 0.0;
     });
-    await Permission.storage.request();
-    final dir = await getApplicationDocumentsDirectory();
-    final savePath = '${dir.path}/book_${data.id}.epub';
+
     try {
+      await Permission.storage.request();
+      final dir = await getApplicationDocumentsDirectory();
+      final savePath = '${dir.path}/book_${book.id}.epub';
+
       await vm.downloadBook(
-        data.formats?.epub ?? '',
+        book,
         savePath,
         onProgress: (progress) {
-          setState(() {
-            _downloadProgress = progress;
-          });
+          if (mounted) {
+            setState(() => _downloadProgress = progress);
+          }
         },
       );
-      setState(() {
-        _isDownloading = false;
-        _isDownloaded = true;
-      });
+
+      if (mounted) {
+        setState(() {
+          _isDownloading = false;
+          _isDownloaded = true;
+          _bookFile = File(savePath);
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isDownloading = false;
-        _isDownloaded = false;
-      });
+      if (mounted) {
+        setState(() => _isDownloading = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Download failed: $e')));
+      }
     }
+  }
+
+  Future<void> _openBook(BuildContext context, File file) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'epub_last_location_${file.path}';
+    final savedCfi = prefs.getString(key);
+
+    if (!context.mounted) return;
+
+    final epubController = EpubController(
+      document: EpubDocument.openFile(file),
+      epubCfi: savedCfi,
+    );
+
+    // ignore: use_build_context_synchronously
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => Scaffold(
+          appBar: AppBar(
+            title: Text(file.path.split('/').last),
+          ), // Can use book title if passed
+          body: EpubView(
+            controller: epubController,
+            onDocumentLoaded: (_) async {
+              await prefs.setString(
+                '${key}_lastOpened',
+                DateTime.now().toIso8601String(),
+              );
+            },
+            onChapterChanged: (_) async {
+              final currentCfi = epubController.generateEpubCfi();
+              if (currentCfi != null) {
+                await prefs.setString(key, currentCfi);
+              }
+            },
+          ),
+        ),
+      ),
+    );
   }
 }
