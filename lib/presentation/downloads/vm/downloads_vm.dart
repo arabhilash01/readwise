@@ -10,12 +10,14 @@ class DownloadedBook {
   final String title;
   final String author;
   final String? coverUrl;
+  final DateTime? lastOpened;
 
   DownloadedBook({
     required this.file,
     required this.title,
     required this.author,
     this.coverUrl,
+    this.lastOpened,
   });
 }
 
@@ -91,17 +93,37 @@ class DownloadsRepository {
         }
       }
 
+      // Fetch last opened timestamp
+      final lastLocationKey = 'epub_last_location_${file.path}';
+      final lastOpenedKey =
+          '${lastLocationKey}_lastOpened'; // Use the same key format as ReaderScreen
+      final lastOpenedStr = prefs.getString(lastOpenedKey);
+      DateTime? lastOpened;
+      if (lastOpenedStr != null) {
+        lastOpened = DateTime.tryParse(lastOpenedStr);
+      }
+
       downloadedBooks.add(
         DownloadedBook(
           file: file,
           title: title,
           author: author,
           coverUrl: coverUrl,
+          lastOpened: lastOpened,
         ),
       );
     }
+
+    // Sort by lastOpened descending (most recent first)
+    downloadedBooks.sort((a, b) {
+      final aTime = a.lastOpened ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final bTime = b.lastOpened ?? DateTime.fromMillisecondsSinceEpoch(0);
+      return bTime.compareTo(aTime);
+    });
+
     return downloadedBooks;
   }
+  // ...
 
   Future<void> deleteBook(File file) async {
     final prefs = await SharedPreferences.getInstance();

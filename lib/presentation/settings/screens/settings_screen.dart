@@ -10,7 +10,7 @@ class SettingsScreen extends StatelessWidget {
       appBar: const CustomAppBar(titleText: 'Settings'),
       backgroundColor: Colors.grey[50],
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
         children: [
           _buildSectionHeader('Appearance'),
           _buildSettingsTile(

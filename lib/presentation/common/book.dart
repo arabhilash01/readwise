@@ -8,6 +8,7 @@ class BookCard extends StatelessWidget {
   final List<String?>? authors;
   final VoidCallback onTap;
   final double? width;
+  final Object? heroTag;
 
   const BookCard({
     super.key,
@@ -17,13 +18,14 @@ class BookCard extends StatelessWidget {
     this.author,
     required this.onTap,
     this.width,
+    this.heroTag,
   });
 
   @override
   Widget build(BuildContext context) {
     // Determine the hero tag. If imageUrl is present, use it as part of the tag,
     // otherwise fallback to title or random string. Ideally, pass ID.
-    final heroTag = imageUrl ?? title ?? UniqueKey().toString();
+    final Object tag = heroTag ?? imageUrl ?? title ?? UniqueKey().toString();
 
     return GestureDetector(
       onTap: onTap,
@@ -35,7 +37,7 @@ class BookCard extends StatelessWidget {
           children: [
             Expanded(
               child: Hero(
-                tag: heroTag,
+                tag: tag,
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),

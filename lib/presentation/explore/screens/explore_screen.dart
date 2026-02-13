@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:readwise/presentation/common/skeletons.dart';
 import 'package:readwise/presentation/explore/vm/explore_vm.dart';
 import 'package:readwise/presentation/explore/widgets/bookshelf.dart';
 
@@ -73,6 +74,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             backgroundColor: const Color(0xFF1B4332), // Forest Green
             foregroundColor: Colors.white,
             flexibleSpace: FlexibleSpaceBar(
+              centerTitle: false,
               titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
               title: Text(
                 title,
@@ -222,13 +224,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                             padding: EdgeInsets.all(32.0),
                             child: Center(child: CircularProgressIndicator()),
                           ),
-                        const SizedBox(height: 40),
+                        const SizedBox(height: 120),
                       ]),
                     ),
                   ),
-            loading: () => const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator()),
-            ),
+            loading: () => const SliverToBoxAdapter(child: GridSkeleton()),
             error: (error, stack) => SliverFillRemaining(
               hasScrollBody: false,
               child: Center(

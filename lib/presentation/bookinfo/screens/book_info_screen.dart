@@ -1,15 +1,14 @@
 import 'dart:io';
 import 'dart:ui';
-
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:epub_view/epub_view.dart' hide Image;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:readwise/presentation/bookinfo/vm/book_info_vm.dart';
+import 'package:readwise/presentation/reader/screens/reader_screen.dart';
 import 'package:readwise/shared/models/book_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:gap/gap.dart';
 
 class BookInfoScreen extends ConsumerStatefulWidget {
   final String bookId;
@@ -52,69 +51,77 @@ class _BookInfoScreenState extends ConsumerState<BookInfoScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: bookAsyncValue.when(
-        data: (book) => Builder(
-          builder: (context) {
-            return CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                _buildSliverAppBar(context, book),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildTitleSection(book),
-                        const SizedBox(height: 16),
-                        _buildInfoSection(book),
-                        const SizedBox(height: 24),
-                        // Static/Inline Download Button positioned high up
-                        _buildDownloadButton(context, book),
-                        const SizedBox(height: 32),
-                        const Divider(height: 1),
-                        const SizedBox(height: 24),
-                        Text(
-                          'About this book',
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          book.summaries?.join('\n\n') ??
-                              'No summary available.',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: Colors.grey[700],
-                                height: 1.6,
-                                fontSize: 16,
-                              ),
-                        ),
-                        const SizedBox(
-                          height: 100,
-                        ), // Space for navbar scrolling
-                      ],
+        data: (book) => CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            _buildSliverAppBar(context, book),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Gap(24),
+                    _buildTitleSection(book),
+                    const Gap(16),
+                    _buildTagsSection(book),
+                    const Gap(32),
+                    _buildActionButtons(context, book),
+                    const Gap(32),
+                    const Divider(height: 1, color: Color(0xFFEEEEEE)),
+                    const Gap(32),
+                    Text(
+                      'About the Book',
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Serif',
+                            color: const Color(0xFF2D3436),
+                          ),
                     ),
-                  ),
+                    const Gap(16),
+                    Text(
+                      book.summaries?.join('\n\n') ??
+                          'No summary available for this title.',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Colors.grey[700],
+                        height: 1.8,
+                        fontSize: 16,
+                        fontFamily: 'Serif',
+                      ),
+                    ),
+                    const Gap(100), // Bottom padding
+                  ],
                 ),
-              ],
-            );
-          },
+              ),
+            ),
+          ],
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => Center(child: Text('Error: $error')),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: Color(0xFF1B4332)),
+        ),
+        error: (error, _) => Center(child: Text('Error: $error')),
       ),
     );
   }
 
-  Widget _buildSliverAppBar(BuildContext context, Book book) {
+  SliverAppBar _buildSliverAppBar(BuildContext context, Book book) {
     return SliverAppBar(
-      expandedHeight: 400,
+      expandedHeight: 450,
       pinned: true,
-      stretch: true,
-      backgroundColor: const Color(0xFF1B4332), // Fallback
+      backgroundColor: Colors.white,
+      elevation: 0,
+      leading: Container(
+        margin: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.9),
+          shape: BoxShape.circle,
+        ),
+        child: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           fit: StackFit.expand,
@@ -124,48 +131,52 @@ class _BookInfoScreenState extends ConsumerState<BookInfoScreen> {
               CachedNetworkImage(
                 imageUrl: book.formats!.coverImage!,
                 fit: BoxFit.cover,
-                color: Colors.black.withOpacity(0.6),
-                colorBlendMode: BlendMode.darken,
-              )
-            else
-              Container(color: const Color(0xFF1B4332)),
-
+                color: Colors.white.withOpacity(0.9),
+                colorBlendMode: BlendMode.lighten,
+              ),
             BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(color: Colors.transparent),
+              filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.white.withOpacity(0.2),
+                      Colors.white.withOpacity(0.95),
+                      Colors.white,
+                    ],
+                    stops: const [0.0, 0.8, 1.0],
+                  ),
+                ),
+              ),
             ),
 
-            // Central Cover Image
+            // Cover Image
             Center(
               child: Hero(
                 tag: 'book_cover_${book.id}',
                 child: Container(
-                  height: 240,
-                  width: 160,
+                  height: 280,
+                  width: 190,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.4),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 30,
+                        offset: const Offset(0, 15),
                       ),
                     ],
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                     child: book.formats?.coverImage != null
                         ? CachedNetworkImage(
                             imageUrl: book.formats!.coverImage!,
                             fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                              color: Colors.grey[200],
-                              child: const Center(
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              ),
-                            ),
+                            placeholder: (_, __) =>
+                                Container(color: Colors.grey[200]),
                             errorWidget: (_, __, ___) => const Icon(
                               Icons.book,
                               size: 50,
@@ -180,17 +191,6 @@ class _BookInfoScreenState extends ConsumerState<BookInfoScreen> {
           ],
         ),
       ),
-      leading: IconButton(
-        icon: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.black45, // Semi-transparent backing
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.arrow_back, color: Colors.white),
-        ),
-        onPressed: () => Navigator.of(context).pop(),
-      ),
     );
   }
 
@@ -201,65 +201,61 @@ class _BookInfoScreenState extends ConsumerState<BookInfoScreen> {
         Text(
           book.title ?? 'Untitled',
           style: const TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Serif', // Use a serif font if available or default
-            letterSpacing: -0.5,
-            color: Colors.black87,
+            fontSize: 32,
+            fontWeight: FontWeight.w900,
+            fontFamily: 'Serif',
             height: 1.2,
+            color: Color(0xFF2D3436),
+            letterSpacing: -0.5,
           ),
         ),
-        const SizedBox(height: 8),
+        const Gap(8),
         Text(
           book.authors?.map((a) => a.name).join(', ') ?? 'Unknown Author',
           style: TextStyle(
             fontSize: 18,
-            color: const Color(0xFF1B4332), // Forest Green accent
             fontWeight: FontWeight.w500,
+            color: Colors.grey[600],
+            letterSpacing: 0.2,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildInfoSection(Book book) {
-    // Collect some metadata tags
-    final tags = <Widget>[];
-    if (book.languages != null && book.languages!.isNotEmpty) {
-      tags.add(_buildTag(Icons.language, book.languages!.first.toUpperCase()));
-    }
-    if (book.downloadCount != null) {
-      tags.add(_buildTag(Icons.download_rounded, '${book.downloadCount}'));
-    }
-
-    // Add copyright check or other metadata if available in model
-    // For now showing available format types as tags
-    if (book.formats?.epub != null) {
-      tags.add(_buildTag(Icons.book_outlined, 'EPUB'));
-    }
-
-    return Wrap(spacing: 12, runSpacing: 12, children: tags);
+  Widget _buildTagsSection(Book book) {
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: [
+        if (book.languages?.isNotEmpty ?? false)
+          _buildTag(Icons.language, book.languages!.first.toUpperCase()),
+        if (book.downloadCount != null)
+          _buildTag(Icons.download_rounded, '${book.downloadCount} downloads'),
+        // Add more metadata chips here
+      ],
+    );
   }
 
   Widget _buildTag(IconData icon, String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: const Color(0xFFF5F6F7),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey[300]!),
+        border: Border.all(color: const Color(0xFFE1E1E1)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: Colors.grey[700]),
-          const SizedBox(width: 8),
+          Icon(icon, size: 14, color: Colors.black54),
+          const Gap(6),
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: Colors.grey[800],
+              color: Colors.black87,
             ),
           ),
         ],
@@ -267,66 +263,76 @@ class _BookInfoScreenState extends ConsumerState<BookInfoScreen> {
     );
   }
 
-  Widget _buildDownloadButton(BuildContext context, Book book) {
-    return SizedBox(
-      height: 56,
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () {
-          if (_isDownloaded) {
-            if (_bookFile != null) {
-              _openBook(context, _bookFile!);
-            }
-          } else if (!_isDownloading) {
-            _handleDownload(book);
-          }
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: _isDownloaded
-              ? const Color(0xFF1B4332) // Forest Green
-              : Colors.black87,
-          foregroundColor: Colors.white,
-          elevation: 2, // Slightly reduced elevation for inline
-          shadowColor: Colors.black38,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+  Widget _buildActionButtons(BuildContext context, Book book) {
+    return Row(
+      children: [
+        Expanded(
+          child: SizedBox(
+            height: 58,
+            child: ElevatedButton(
+              onPressed: () {
+                if (_isDownloaded) {
+                  if (_bookFile != null) _openBook(context, _bookFile!);
+                } else if (!_isDownloading) {
+                  _handleDownload(book);
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                backgroundColor: const Color(0xFF1B4332), // Forest Green
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              child: _isDownloading
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            value: _downloadProgress > 0
+                                ? _downloadProgress
+                                : null,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const Gap(12),
+                        Text(
+                          'Downloading ${(_downloadProgress * 100).toInt()}%',
+                        ),
+                      ],
+                    )
+                  : Text(
+                      _isDownloaded ? 'Read Now' : 'Download Book',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+            ),
           ),
         ),
-        child: _isDownloading
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      value: _downloadProgress > 0 ? _downloadProgress : null,
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Downloading ${(_downloadProgress * 100).toInt()}%',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ],
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(_isDownloaded ? Icons.menu_book : Icons.download),
-                  const SizedBox(width: 12),
-                  Text(
-                    _isDownloaded ? 'Read Now' : 'Download Book',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-      ),
+        const Gap(16),
+        Container(
+          height: 58,
+          width: 58,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF5F6F7),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE1E1E1)),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.favorite_border, color: Colors.black87),
+            onPressed: () {
+              // TODO: Implement favorites
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -347,9 +353,7 @@ class _BookInfoScreenState extends ConsumerState<BookInfoScreen> {
         book,
         savePath,
         onProgress: (progress) {
-          if (mounted) {
-            setState(() => _downloadProgress = progress);
-          }
+          if (mounted) setState(() => _downloadProgress = progress);
         },
       );
 
@@ -371,40 +375,10 @@ class _BookInfoScreenState extends ConsumerState<BookInfoScreen> {
   }
 
   Future<void> _openBook(BuildContext context, File file) async {
-    final prefs = await SharedPreferences.getInstance();
-    final key = 'epub_last_location_${file.path}';
-    final savedCfi = prefs.getString(key);
-
     if (!context.mounted) return;
-
-    final epubController = EpubController(
-      document: EpubDocument.openFile(file),
-      epubCfi: savedCfi,
-    );
-
-    // ignore: use_build_context_synchronously
-    await Navigator.of(context).push(
+    await Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
-        builder: (_) => Scaffold(
-          appBar: AppBar(
-            title: Text(file.path.split('/').last),
-          ), // Can use book title if passed
-          body: EpubView(
-            controller: epubController,
-            onDocumentLoaded: (_) async {
-              await prefs.setString(
-                '${key}_lastOpened',
-                DateTime.now().toIso8601String(),
-              );
-            },
-            onChapterChanged: (_) async {
-              final currentCfi = epubController.generateEpubCfi();
-              if (currentCfi != null) {
-                await prefs.setString(key, currentCfi);
-              }
-            },
-          ),
-        ),
+        builder: (_) => ReaderScreen(bookFile: file, bookId: widget.bookId),
       ),
     );
   }

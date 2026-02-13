@@ -46,8 +46,10 @@ class _BottomNavBarState extends ConsumerState<BottomNavBar> {
     // We want the bar to float above the content, so we rely on the Scaffold to place this
     // but we add our own margins/padding to make it look floating.
 
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 30),
+      padding: EdgeInsets.fromLTRB(24, 0, 24, 20 + bottomPadding),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(30),
         child: BackdropFilter(

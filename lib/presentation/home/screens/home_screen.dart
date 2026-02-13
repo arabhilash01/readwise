@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:readwise/presentation/common/skeletons.dart';
 import 'package:readwise/presentation/explore/screens/categories_screen.dart';
 import 'package:readwise/presentation/explore/screens/explore_screen.dart';
 import 'package:readwise/presentation/home/vm/home_vm.dart';
@@ -97,14 +98,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           SliverList(
             delegate: SliverChildListDelegate.fixed([
               if (homeState.isLoading)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 50),
-                  child: Center(child: CircularProgressIndicator()),
+                const Column(
+                  children: [
+                    HorizontalListSkeleton(),
+                    SizedBox(height: 24),
+                    HorizontalListSkeleton(),
+                    SizedBox(height: 24),
+                    HorizontalListSkeleton(),
+                  ],
                 )
               else
                 Container(
                   color: Colors.grey[100],
-                  padding: const EdgeInsets.only(bottom: 100),
+                  padding: const EdgeInsets.only(bottom: 120),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

@@ -8,9 +8,9 @@ final shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
 
 final routerProvider = AutoDisposeProvider<GoRouter>(router);
 
-final _securedRoutes = [
-  //TODO add secured routes
-];
+// final _securedRoutes = [
+//   //TODO add secured routes
+// ];
 
 GoRouter router(Ref<GoRouter> ref) {
   //TODO auth check
